@@ -136,14 +136,14 @@ function WarpTransition({ transitioning, targetDark, onMidpoint, onComplete }) {
         ctx.stroke()
       })
 
-      // flash at midpoint
-      const flashDist = Math.abs(t - MIDPOINT)
-      if (flashDist < 0.14) {
-        const flashAlpha = ((0.14 - flashDist) / 0.14) * 0.75
-        ctx.fillStyle = targetDark
-          ? `rgba(80, 140, 255, ${flashAlpha})`
-          : `rgba(255, 255, 255, ${flashAlpha})`
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
+      // flash at midpoint (only for light mode transition)
+      if (!targetDark) {
+        const flashDist = Math.abs(t - MIDPOINT)
+        if (flashDist < 0.14) {
+          const flashAlpha = ((0.14 - flashDist) / 0.14) * 0.75
+          ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha})`
+          ctx.fillRect(0, 0, canvas.width, canvas.height)
+        }
       }
 
       animId = requestAnimationFrame(animate)
