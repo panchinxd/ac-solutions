@@ -101,19 +101,14 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
-@keyframes twinkle {
-  0%, 100% { opacity: var(--star-opacity); transform: scale(1); }
-  50% { opacity: calc(var(--star-opacity) * 0.2); transform: scale(0.7); }
-}
 
-/* Theme transition for smooth switching */
-*, *::before, *::after {
+/* Theme transition — only on elements that actually change color */
+body, nav, section, footer, div, a, button, input, textarea, label, span, p, h1, h2, h3 {
   transition-property: background-color, border-color, color;
   transition-duration: 200ms;
   transition-timing-function: ease;
 }
 
-/* But don't apply transition to animations */
-[class*="animate-"] {
+[class*="animate-"], canvas {
   transition: none;
 }

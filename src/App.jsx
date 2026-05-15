@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+
+const isMobile = () => window.innerWidth < 768
 
 function useInView(threshold = 0.15) {
   const ref = useRef(null)
@@ -16,38 +18,57 @@ function useInView(threshold = 0.15) {
   return [ref, visible]
 }
 
-function StarField() {
-  const stars = useMemo(() =>
-    Array.from({ length: 160 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 1.4 + 0.4,
-      opacity: Math.random() * 0.35 + 0.08,
-      duration: Math.random() * 4 + 2.5,
-      delay: Math.random() * 6,
+function StarField({ dark }) {
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    const mobile = isMobile()
+    const count = mobile ? 80 : 160
+
+    const resize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    resize()
+    window.addEventListener('resize', resize)
+
+    const stars = Array.from({ length: count }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.2 + 0.3,
+      baseOpacity: Math.random() * 0.5 + 0.1,
+      phase: Math.random() * Math.PI * 2,
+      speed: Math.random() * 0.4 + 0.2,
     }))
-  , [])
+
+    let animId
+    const draw = (t) => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      const color = dark ? '255,255,255' : '30,50,80'
+      stars.forEach(s => {
+        const opacity = s.baseOpacity * (0.4 + 0.6 * Math.abs(Math.sin(t * s.speed + s.phase)))
+        ctx.beginPath()
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(${color},${opacity})`
+        ctx.fill()
+      })
+      animId = requestAnimationFrame(draw)
+    }
+
+    animId = requestAnimationFrame(draw)
+    return () => {
+      cancelAnimationFrame(animId)
+      window.removeEventListener('resize', resize)
+    }
+  }, [dark])
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {stars.map(star => (
-        <div
-          key={star.id}
-          className="absolute rounded-full bg-white dark:bg-white"
-          style={{
-            left: `${star.x}%`,
-            top: `${star.y}%`,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            '--star-opacity': star.opacity,
-            opacity: star.opacity,
-            animation: `twinkle ${star.duration}s ease-in-out infinite`,
-            animationDelay: `${star.delay}s`,
-          }}
-        />
-      ))}
-    </div>
+    <canvas
+      ref={canvasRef}
+      style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}
+    />
   )
 }
 
@@ -65,7 +86,8 @@ function WarpTransition({ transitioning, targetDark, onMidpoint, onComplete }) {
     const cx = canvas.width / 2
     const cy = canvas.height / 2
 
-    const stars = Array.from({ length: 300 }, () => {
+    const starCount = isMobile() ? 120 : 300
+    const stars = Array.from({ length: starCount }, () => {
       const angle = Math.random() * Math.PI * 2
       return {
         angle,
@@ -265,8 +287,8 @@ function Hero() {
   return (
     <section id="hero" ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-black">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#2563EB]/10 blur-[100px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 rounded-full bg-[#2563EB]/5 blur-[80px]" />
+        <div className="hidden sm:block absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#2563EB]/10 blur-[100px]" />
+        <div className="hidden sm:block absolute bottom-1/4 right-1/4 w-72 h-72 rounded-full bg-[#2563EB]/5 blur-[80px]" />
         <div className="absolute top-20 left-10 w-2 h-2 rounded-full bg-[#2563EB] animate-float opacity-60" style={{ animationDelay: '0s' }} />
         <div className="absolute top-40 right-20 w-1.5 h-1.5 rounded-full bg-[#2563EB] animate-float opacity-40" style={{ animationDelay: '1s' }} />
         <div className="absolute bottom-40 left-1/4 w-1 h-1 rounded-full bg-[#2563EB] animate-float opacity-50" style={{ animationDelay: '2s' }} />
@@ -790,7 +812,7 @@ function About({ dark }) {
 
           <div className={`${visible ? 'animate-slide-right' : 'opacity-0'} flex justify-center`}>
             <div className="relative">
-              <div className="absolute -inset-4 rounded-3xl bg-[#2563EB]/20 blur-2xl" />
+              <div className="hidden sm:block absolute -inset-4 rounded-3xl bg-[#2563EB]/20 blur-2xl" />
               <div className="relative bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl p-10 text-center">
                 <img src={dark ? '/logo-light.png' : '/logo-dark.png'} alt="Palacios Solutions" className="h-32 object-contain mx-auto mb-6" />
                 <div className="text-slate-500 dark:text-gray-400 text-sm leading-relaxed max-w-xs">
@@ -822,7 +844,7 @@ function Contact() {
   return (
     <section id="contacto" ref={ref} className="py-28 bg-white dark:bg-[#0a0a0a] relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#2563EB]/5 blur-[120px] rounded-full" />
+        <div className="hidden sm:block absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#2563EB]/5 blur-[120px] rounded-full" />
       </div>
 
       <div className="relative max-w-3xl mx-auto px-6">
@@ -947,7 +969,7 @@ export default function App() {
       />
       <div className="bg-slate-50 dark:bg-black min-h-screen">
         <div className={`transition-opacity duration-500 ${dark ? 'opacity-100' : 'opacity-10'}`}>
-          <StarField />
+          <StarField dark={dark} />
         </div>
         <Navbar dark={dark} toggleTheme={toggleTheme} />
         <Hero />
