@@ -51,6 +51,118 @@ function StarField() {
   )
 }
 
+function WarpTransition({ transitioning, targetDark, onMidpoint, onComplete }) {
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    if (!transitioning) return
+
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+
+    const cx = canvas.width / 2
+    const cy = canvas.height / 2
+
+    const stars = Array.from({ length: 300 }, () => {
+      const angle = Math.random() * Math.PI * 2
+      return {
+        angle,
+        initDist: Math.random() * 80 + 5,
+        speed: Math.random() * 0.7 + 0.4,
+        thickness: Math.random() * 1.8 + 0.3,
+      }
+    })
+
+    const DURATION = 1100
+    const MIDPOINT = 0.62
+    let midpointFired = false
+    let startTime = null
+    let animId = null
+
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp
+      const t = Math.min((timestamp - startTime) / DURATION, 1)
+
+      if (t >= MIDPOINT && !midpointFired) {
+        midpointFired = true
+        onMidpoint()
+      }
+
+      if (t >= 1) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        onComplete()
+        return
+      }
+
+      // warpPhase: accelerates going dark, decelerates going light
+      const warpPhase = targetDark
+        ? Math.pow(t, 1.6)
+        : Math.pow(1 - t, 1.6)
+
+      // trailing bg to create motion blur feel
+      const trailAlpha = targetDark
+        ? 0.18 + warpPhase * 0.25
+        : 0.18 + warpPhase * 0.25
+      ctx.fillStyle = targetDark
+        ? `rgba(0, 0, 10, ${trailAlpha})`
+        : `rgba(240, 245, 255, ${trailAlpha})`
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      const maxDim = Math.sqrt(cx * cx + cy * cy) * 1.5
+
+      stars.forEach(star => {
+        const dist = star.initDist + warpPhase * 900 * star.speed
+        if (dist > maxDim) return
+
+        const tail = warpPhase * 280 * star.speed + 1
+        const x1 = cx + Math.cos(star.angle) * dist
+        const y1 = cy + Math.sin(star.angle) * dist
+        const x2 = cx + Math.cos(star.angle) * (dist + tail)
+        const y2 = cy + Math.sin(star.angle) * (dist + tail)
+
+        const alpha = Math.min(warpPhase * 2.5, 1) * star.speed
+        const grad = ctx.createLinearGradient(x1, y1, x2, y2)
+        grad.addColorStop(0, `rgba(180, 210, 255, 0)`)
+        grad.addColorStop(0.5, `rgba(210, 228, 255, ${alpha * 0.5})`)
+        grad.addColorStop(1, `rgba(255, 255, 255, ${alpha})`)
+
+        ctx.beginPath()
+        ctx.strokeStyle = grad
+        ctx.lineWidth = star.thickness * (1 + warpPhase)
+        ctx.moveTo(x1, y1)
+        ctx.lineTo(x2, y2)
+        ctx.stroke()
+      })
+
+      // flash at midpoint
+      const flashDist = Math.abs(t - MIDPOINT)
+      if (flashDist < 0.14) {
+        const flashAlpha = ((0.14 - flashDist) / 0.14) * 0.75
+        ctx.fillStyle = targetDark
+          ? `rgba(80, 140, 255, ${flashAlpha})`
+          : `rgba(255, 255, 255, ${flashAlpha})`
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+      }
+
+      animId = requestAnimationFrame(animate)
+    }
+
+    animId = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(animId)
+  }, [transitioning])
+
+  if (!transitioning) return null
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ position: 'fixed', inset: 0, zIndex: 200, pointerEvents: 'none' }}
+    />
+  )
+}
+
 function SunIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -806,23 +918,38 @@ function WhatsAppButton() {
 
 export default function App() {
   const [dark, setDark] = useState(true)
+  const [transitioning, setTransitioning] = useState(false)
+  const [targetDark, setTargetDark] = useState(true)
 
   useEffect(() => {
     const saved = localStorage.getItem('theme')
     if (saved) setDark(saved === 'dark')
   }, [])
 
-  useEffect(() => {
-    localStorage.setItem('theme', dark ? 'dark' : 'light')
-  }, [dark])
+  const toggleTheme = () => {
+    if (transitioning) return
+    setTargetDark(!dark)
+    setTransitioning(true)
+  }
+
+  const handleMidpoint = () => {
+    setDark(d => !d)
+    localStorage.setItem('theme', targetDark ? 'dark' : 'light')
+  }
 
   return (
     <div className={dark ? 'dark' : ''}>
+      <WarpTransition
+        transitioning={transitioning}
+        targetDark={targetDark}
+        onMidpoint={handleMidpoint}
+        onComplete={() => setTransitioning(false)}
+      />
       <div className="bg-slate-50 dark:bg-black min-h-screen">
         <div className={`transition-opacity duration-500 ${dark ? 'opacity-100' : 'opacity-10'}`}>
           <StarField />
         </div>
-        <Navbar dark={dark} toggleTheme={() => setDark(d => !d)} />
+        <Navbar dark={dark} toggleTheme={toggleTheme} />
         <Hero />
         <Services />
         <Portfolio />
