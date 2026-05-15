@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 function useInView(threshold = 0.15) {
   const ref = useRef(null)
@@ -14,6 +14,41 @@ function useInView(threshold = 0.15) {
   }, [threshold])
 
   return [ref, visible]
+}
+
+function StarField() {
+  const stars = useMemo(() =>
+    Array.from({ length: 160 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 1.4 + 0.4,
+      opacity: Math.random() * 0.35 + 0.08,
+      duration: Math.random() * 4 + 2.5,
+      delay: Math.random() * 6,
+    }))
+  , [])
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      {stars.map(star => (
+        <div
+          key={star.id}
+          className="absolute rounded-full bg-white dark:bg-white"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            '--star-opacity': star.opacity,
+            opacity: star.opacity,
+            animation: `twinkle ${star.duration}s ease-in-out infinite`,
+            animationDelay: `${star.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  )
 }
 
 function SunIcon() {
@@ -784,6 +819,9 @@ export default function App() {
   return (
     <div className={dark ? 'dark' : ''}>
       <div className="bg-slate-50 dark:bg-black min-h-screen">
+        <div className={`transition-opacity duration-500 ${dark ? 'opacity-100' : 'opacity-10'}`}>
+          <StarField />
+        </div>
         <Navbar dark={dark} toggleTheme={() => setDark(d => !d)} />
         <Hero />
         <Services />

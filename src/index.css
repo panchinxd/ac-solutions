@@ -101,6 +101,11 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
+@keyframes twinkle {
+  0%, 100% { opacity: var(--star-opacity); transform: scale(1); }
+  50% { opacity: calc(var(--star-opacity) * 0.2); transform: scale(0.7); }
+}
+
 /* Theme transition for smooth switching */
 *, *::before, *::after {
   transition-property: background-color, border-color, color;
