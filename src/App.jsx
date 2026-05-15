@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
+import translations from './translations'
 
 const isMobile = () => window.innerWidth < 768
+const getBrowserLang = () =>
+  (navigator.language || navigator.languages?.[0] || 'en').toLowerCase().startsWith('es') ? 'es' : 'en'
 
 function useInView(threshold = 0.15) {
   const ref = useRef(null)
@@ -213,7 +216,7 @@ function WhatsAppIcon() {
   )
 }
 
-function Navbar({ dark, toggleTheme }) {
+function Navbar({ dark, toggleTheme, lang, setLang, t }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -224,11 +227,11 @@ function Navbar({ dark, toggleTheme }) {
   }, [])
 
   const links = [
-    ['#servicios', 'Servicios'],
-    ['#portafolio', 'Portafolio'],
-    ['#precios', 'Precios'],
-    ['#nosotros', 'Nosotros'],
-    ['#contacto', 'Contacto'],
+    ['#servicios', t.nav.services],
+    ['#portafolio', t.nav.portfolio],
+    ['#precios', t.nav.pricing],
+    ['#nosotros', t.nav.about],
+    ['#contacto', t.nav.contact],
   ]
 
   return (
@@ -249,15 +252,28 @@ function Navbar({ dark, toggleTheme }) {
         </ul>
 
         <div className="hidden md:flex items-center gap-3">
+          <button
+            onClick={() => setLang(l => l === 'es' ? 'en' : 'es')}
+            className="p-2 rounded-full border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300 hover:border-[#2563EB]/50 hover:text-[#2563EB] transition-all duration-200 text-xs font-bold w-9 h-9 flex items-center justify-center"
+            aria-label="Toggle language"
+          >
+            {lang === 'es' ? 'EN' : 'ES'}
+          </button>
           <button onClick={toggleTheme} className="p-2.5 rounded-full border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300 hover:border-[#2563EB]/50 hover:text-[#2563EB] transition-all duration-200" aria-label="Toggle theme">
             {dark ? <SunIcon /> : <MoonIcon />}
           </button>
           <a href="#contacto" className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-200 glow-blue-hover">
-            Hablemos
+            {t.nav.cta}
           </a>
         </div>
 
-        <div className="md:hidden flex items-center gap-3">
+        <div className="md:hidden flex items-center gap-2">
+          <button
+            onClick={() => setLang(l => l === 'es' ? 'en' : 'es')}
+            className="text-xs font-bold border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300 w-8 h-8 rounded-full flex items-center justify-center"
+          >
+            {lang === 'es' ? 'EN' : 'ES'}
+          </button>
           <button onClick={toggleTheme} className="p-2 rounded-full border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300">
             {dark ? <SunIcon /> : <MoonIcon />}
           </button>
@@ -274,15 +290,16 @@ function Navbar({ dark, toggleTheme }) {
           {links.map(([href, label]) => (
             <a key={href} href={href} onClick={() => setMenuOpen(false)} className="block text-slate-600 dark:text-gray-300 hover:text-[#2563EB] transition-colors">{label}</a>
           ))}
-          <a href="#contacto" onClick={() => setMenuOpen(false)} className="block bg-[#2563EB] text-white text-center py-2.5 rounded-full font-semibold mt-2">Hablemos</a>
+          <a href="#contacto" onClick={() => setMenuOpen(false)} className="block bg-[#2563EB] text-white text-center py-2.5 rounded-full font-semibold mt-2">{t.nav.cta}</a>
         </div>
       )}
     </nav>
   )
 }
 
-function Hero() {
+function Hero({ t }) {
   const [ref, visible] = useInView(0.1)
+  const h = t.hero
 
   return (
     <section id="hero" ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-black">
@@ -302,33 +319,32 @@ function Hero() {
 
         <div className={`${visible ? 'animate-fade-up delay-200' : 'opacity-0'}`}>
           <span className="inline-block bg-[#2563EB]/10 border border-[#2563EB]/30 text-[#1D4ED8] dark:text-[#93c5fd] text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-            Desarrollo Web &amp; Branding
+            {h.badge}
           </span>
         </div>
 
         <h1 className={`text-5xl md:text-7xl lg:text-8xl font-black leading-none mb-6 text-slate-900 dark:text-white ${visible ? 'animate-fade-up delay-300' : 'opacity-0'}`}>
-          Tu presencia{' '}
-          <span className="gradient-text">digital</span>
+          {h.title1}{' '}
+          <span className="gradient-text">{h.titleHighlight}</span>
           <br />
-          empieza aquí.
+          {h.title2}
         </h1>
 
         <p className={`text-lg md:text-xl text-slate-500 dark:text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed ${visible ? 'animate-fade-up delay-400' : 'opacity-0'}`}>
-          Creamos sitios web y marcas que convierten visitantes en clientes.
-          Diseño limpio, código rápido, resultados reales.
+          {h.subtitle}
         </p>
 
         <div className={`flex flex-col sm:flex-row gap-4 justify-center ${visible ? 'animate-fade-up delay-500' : 'opacity-0'}`}>
           <a href="#contacto" className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold px-8 py-4 rounded-full text-base transition-all duration-200 glow-blue glow-blue-hover">
-            Empezar proyecto →
+            {h.ctaPrimary}
           </a>
           <a href="#portafolio" className="border border-slate-300 dark:border-white/20 hover:border-[#2563EB]/50 text-slate-900 dark:text-white font-semibold px-8 py-4 rounded-full text-base transition-all duration-200 hover:bg-[#2563EB]/10">
-            Ver portafolio
+            {h.ctaSecondary}
           </a>
         </div>
 
         <div className={`mt-20 ${visible ? 'animate-fade-up delay-600' : 'opacity-0'}`}>
-          <p className="text-xs text-slate-400 dark:text-gray-600 mb-4 uppercase tracking-widest">Tecnologías que usamos</p>
+          <p className="text-xs text-slate-400 dark:text-gray-600 mb-4 uppercase tracking-widest">{h.techLabel}</p>
           <div className="flex flex-wrap justify-center gap-3">
             {['React', 'Next.js', 'Node.js', 'Tailwind', 'TypeScript', 'Figma'].map(tech => (
               <span key={tech} className="text-xs text-slate-500 dark:text-gray-500 border border-slate-200 dark:border-white/10 px-3 py-1.5 rounded-full bg-white dark:bg-white/5">
@@ -348,53 +364,32 @@ function Hero() {
   )
 }
 
-function Services() {
+function Services({ t }) {
   const [ref, visible] = useInView(0.1)
-
-  const services = [
-    {
-      icon: '🖥️',
-      title: 'Landing Pages',
-      desc: 'Páginas diseñadas para convertir. Rápidas, atractivas y optimizadas para que tus visitantes tomen acción.',
-      features: ['Diseño personalizado', 'Optimizada para conversión', 'Mobile-first', 'SEO básico incluido'],
-    },
-    {
-      icon: '🌐',
-      title: 'Sitios Web',
-      desc: 'Sitios completos que representan tu marca. Desde portafolios hasta tiendas online.',
-      features: ['Diseño a medida', 'Panel de administración', 'Múltiples páginas', 'Hosting y dominio'],
-    },
-    {
-      icon: '🎨',
-      title: 'Branding',
-      desc: 'Elevamos tu marca al siguiente nivel. Identidades visuales sólidas que conectan con tu audiencia.',
-      features: ['Creación de logos', 'Manual de marca', 'Paleta de colores y tipografía', 'Marketing digital'],
-    },
-  ]
+  const s = t.services
+  const icons = ['🖥️', '🌐', '🎨']
 
   return (
     <section id="servicios" ref={ref} className="py-28 bg-slate-50 dark:bg-black">
       <div className="max-w-6xl mx-auto px-6">
         <div className={`text-center mb-16 ${visible ? 'animate-fade-up' : 'opacity-0'}`}>
-          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">Lo que hacemos</span>
-          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">Servicios</h2>
-          <p className="text-slate-500 dark:text-gray-400 max-w-xl mx-auto">
-            Desde una simple landing page hasta una identidad de marca completa.
-          </p>
+          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">{s.label}</span>
+          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">{s.title}</h2>
+          <p className="text-slate-500 dark:text-gray-400 max-w-xl mx-auto">{s.subtitle}</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {services.map((s, i) => (
+          {s.items.map((item, i) => (
             <div
-              key={s.title}
+              key={item.title}
               className={`bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-8 card-hover ${visible ? 'animate-fade-up' : 'opacity-0'}`}
               style={{ animationDelay: `${0.1 + i * 0.15}s` }}
             >
-              <div className="text-4xl mb-5">{s.icon}</div>
-              <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-white">{s.title}</h3>
-              <p className="text-slate-500 dark:text-gray-400 text-sm leading-relaxed mb-6">{s.desc}</p>
+              <div className="text-4xl mb-5">{icons[i]}</div>
+              <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-white">{item.title}</h3>
+              <p className="text-slate-500 dark:text-gray-400 text-sm leading-relaxed mb-6">{item.desc}</p>
               <ul className="space-y-2">
-                {s.features.map(f => (
+                {item.features.map(f => (
                   <li key={f} className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-300">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] flex-shrink-0" />
                     {f}
@@ -409,59 +404,29 @@ function Services() {
   )
 }
 
-function Portfolio() {
+function Portfolio({ t }) {
   const [ref, visible] = useInView(0.1)
-
-  const projects = [
-    {
-      title: 'Restaurante Don Carlo',
-      category: 'Landing Page',
-      desc: 'Landing page con menú online, reservas y galería de fotos.',
-      gradient: 'from-orange-500 to-rose-600',
-      tags: ['React', 'Tailwind'],
-    },
-    {
-      title: 'Studio Alma',
-      category: 'Branding + Web',
-      desc: 'Identidad visual completa y sitio web para estudio de yoga.',
-      gradient: 'from-violet-500 to-purple-700',
-      tags: ['Branding', 'Next.js'],
-    },
-    {
-      title: 'FixIt Pro',
-      category: 'Sitio Web',
-      desc: 'Sitio con cotizador online para empresa de reparaciones del hogar.',
-      gradient: 'from-sky-500 to-blue-700',
-      tags: ['React', 'Node.js'],
-    },
-    {
-      title: 'Tienda Verde',
-      category: 'E-commerce',
-      desc: 'Tienda online para productos orgánicos con carrito y pagos integrados.',
-      gradient: 'from-emerald-500 to-teal-700',
-      tags: ['Next.js', 'Stripe'],
-    },
-  ]
+  const p = t.portfolio
+  const gradients = ['from-orange-500 to-rose-600', 'from-violet-500 to-purple-700', 'from-sky-500 to-blue-700', 'from-emerald-500 to-teal-700']
+  const tags = [['React', 'Tailwind'], ['Branding', 'Next.js'], ['React', 'Node.js'], ['Next.js', 'Stripe']]
 
   return (
     <section id="portafolio" ref={ref} className="py-28 bg-white dark:bg-[#0a0a0a]">
       <div className="max-w-6xl mx-auto px-6">
         <div className={`text-center mb-16 ${visible ? 'animate-fade-up' : 'opacity-0'}`}>
-          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">Nuestro trabajo</span>
-          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">Portafolio</h2>
-          <p className="text-slate-500 dark:text-gray-400 max-w-xl mx-auto">
-            Proyectos que hablan por sí solos. Cada uno construido con atención al detalle.
-          </p>
+          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">{p.label}</span>
+          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">{p.title}</h2>
+          <p className="text-slate-500 dark:text-gray-400 max-w-xl mx-auto">{p.subtitle}</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {projects.map((p, i) => (
+          {p.items.map((item, i) => (
             <div
-              key={p.title}
+              key={item.title}
               className={`group rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 card-hover bg-white dark:bg-white/5 ${visible ? 'animate-fade-up' : 'opacity-0'}`}
               style={{ animationDelay: `${0.1 + i * 0.12}s` }}
             >
-              <div className={`h-48 bg-gradient-to-br ${p.gradient} relative overflow-hidden`}>
+              <div className={`h-48 bg-gradient-to-br ${gradients[i]} relative overflow-hidden`}>
                 <div className="absolute inset-0 flex items-center justify-center opacity-20">
                   <div className="grid grid-cols-3 gap-3 p-6 w-full">
                     <div className="col-span-3 h-3 bg-white rounded-full" />
@@ -475,15 +440,15 @@ function Portfolio() {
                 </div>
                 <div className="absolute top-4 left-4">
                   <span className="bg-white/20 backdrop-blur text-white text-xs font-semibold px-3 py-1 rounded-full">
-                    {p.category}
+                    {item.category}
                   </span>
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{p.title}</h3>
-                <p className="text-slate-500 dark:text-gray-400 text-sm mb-4">{p.desc}</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{item.title}</h3>
+                <p className="text-slate-500 dark:text-gray-400 text-sm mb-4">{item.desc}</p>
                 <div className="flex gap-2">
-                  {p.tags.map(tag => (
+                  {tags[i].map(tag => (
                     <span key={tag} className="text-xs text-[#2563EB] bg-[#2563EB]/10 px-2.5 py-1 rounded-full font-medium">
                       {tag}
                     </span>
@@ -498,33 +463,28 @@ function Portfolio() {
   )
 }
 
-function Process() {
+function Process({ t }) {
   const [ref, visible] = useInView(0.1)
-
-  const steps = [
-    { num: '01', title: 'Conversamos', desc: 'Nos cuentas tu idea y lo que necesitas. Sin tecnicismos, directo al punto.' },
-    { num: '02', title: 'Diseñamos', desc: 'Creamos el diseño para que lo veas y apruebes antes de construirlo.' },
-    { num: '03', title: 'Desarrollamos', desc: 'Codificamos tu sitio con las mejores tecnologías, rápido y con calidad.' },
-    { num: '04', title: 'Lanzamos', desc: 'Publicamos tu sitio y quedamos disponibles para soporte.' },
-  ]
+  const p = t.process
+  const nums = ['01', '02', '03', '04']
 
   return (
     <section id="proceso" ref={ref} className="py-28 bg-slate-50 dark:bg-black">
       <div className="max-w-6xl mx-auto px-6">
         <div className={`text-center mb-16 ${visible ? 'animate-fade-up' : 'opacity-0'}`}>
-          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">Cómo trabajamos</span>
-          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">Proceso simple</h2>
-          <p className="text-slate-500 dark:text-gray-400 max-w-xl mx-auto">Sin complicaciones. Te acompañamos en cada paso.</p>
+          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">{p.label}</span>
+          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">{p.title}</h2>
+          <p className="text-slate-500 dark:text-gray-400 max-w-xl mx-auto">{p.subtitle}</p>
         </div>
 
         <div className="grid md:grid-cols-4 gap-6">
-          {steps.map((step, i) => (
-            <div key={step.num} className={`relative ${visible ? 'animate-fade-up' : 'opacity-0'}`} style={{ animationDelay: `${0.1 + i * 0.15}s` }}>
-              {i < steps.length - 1 && (
+          {p.steps.map((step, i) => (
+            <div key={nums[i]} className={`relative ${visible ? 'animate-fade-up' : 'opacity-0'}`} style={{ animationDelay: `${0.1 + i * 0.15}s` }}>
+              {i < p.steps.length - 1 && (
                 <div className="hidden md:block absolute top-8 left-full w-full h-px bg-gradient-to-r from-[#2563EB]/40 to-transparent z-0" />
               )}
               <div className="relative z-10 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 card-hover h-full">
-                <span className="text-[#2563EB] text-3xl font-black">{step.num}</span>
+                <span className="text-[#2563EB] text-3xl font-black">{nums[i]}</span>
                 <h3 className="text-lg font-bold mt-3 mb-2 text-slate-900 dark:text-white">{step.title}</h3>
                 <p className="text-slate-500 dark:text-gray-400 text-sm leading-relaxed">{step.desc}</p>
               </div>
@@ -536,150 +496,91 @@ function Process() {
   )
 }
 
-function Pricing() {
+function Pricing({ t }) {
   const [ref, visible] = useInView(0.1)
-
-  const plans = [
-    {
-      name: 'Landing Page',
-      price: '$299',
-      desc: 'Ideal para presentar tu negocio o producto con una sola página de impacto.',
-      features: ['1 página diseño custom', 'Mobile-first', 'Formulario de contacto', 'SEO básico', '1 ronda de revisiones', 'Entrega en 7 días'],
-      highlighted: false,
-      cta: 'Empezar',
-    },
-    {
-      name: 'Sitio Web',
-      price: '$599',
-      desc: 'Para negocios que necesitan presencia completa y profesional en internet.',
-      features: ['Hasta 5 páginas', 'Diseño 100% a medida', 'Panel de administración', 'Formularios y blog', '2 rondas de revisiones', 'Entrega en 14 días'],
-      highlighted: true,
-      cta: 'El más elegido',
-    },
-    {
-      name: 'Branding + Web',
-      price: '$999',
-      desc: 'El paquete completo: identidad de marca + sitio web listo para escalar.',
-      features: ['Logo + manual de marca', 'Paleta y tipografía', 'Sitio web completo', 'Redes sociales kit', '3 rondas de revisiones', 'Entrega en 21 días'],
-      highlighted: false,
-      cta: 'Empezar',
-    },
-  ]
+  const p = t.pricing
+  const prices = ['$299', '$599', '$999']
+  const highlighted = [false, true, false]
 
   return (
     <section id="precios" ref={ref} className="py-28 bg-white dark:bg-[#0a0a0a]">
       <div className="max-w-6xl mx-auto px-6">
         <div className={`text-center mb-16 ${visible ? 'animate-fade-up' : 'opacity-0'}`}>
-          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">Inversión</span>
-          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">Precios</h2>
-          <p className="text-slate-500 dark:text-gray-400 max-w-xl mx-auto">
-            Precios desde USD. Todos los proyectos incluyen soporte post-lanzamiento.
-          </p>
+          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">{p.label}</span>
+          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">{p.title}</h2>
+          <p className="text-slate-500 dark:text-gray-400 max-w-xl mx-auto">{p.subtitle}</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 items-start">
-          {plans.map((plan, i) => (
+          {p.plans.map((plan, i) => (
             <div
               key={plan.name}
               className={`relative rounded-2xl p-8 card-hover ${visible ? 'animate-fade-up' : 'opacity-0'} ${
-                plan.highlighted
+                highlighted[i]
                   ? 'bg-[#2563EB] border-2 border-[#2563EB] shadow-2xl shadow-[#2563EB]/30 scale-105'
                   : 'bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10'
               }`}
               style={{ animationDelay: `${0.1 + i * 0.15}s` }}
             >
-              {plan.highlighted && (
+              {highlighted[i] && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-[#2563EB] text-xs font-bold px-4 py-1.5 rounded-full shadow">
-                  ⭐ Más elegido
+                  {p.badge}
                 </div>
               )}
-
-              <div className={`text-sm font-semibold uppercase tracking-widest mb-2 ${plan.highlighted ? 'text-blue-100' : 'text-[#2563EB]'}`}>
+              <div className={`text-sm font-semibold uppercase tracking-widest mb-2 ${highlighted[i] ? 'text-blue-100' : 'text-[#2563EB]'}`}>
                 {plan.name}
               </div>
-              <div className={`text-5xl font-black mb-1 ${plan.highlighted ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
-                {plan.price}
-                <span className={`text-base font-normal ml-1 ${plan.highlighted ? 'text-blue-100' : 'text-slate-400 dark:text-gray-500'}`}>USD</span>
+              <div className={`text-5xl font-black mb-1 ${highlighted[i] ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+                {prices[i]}
+                <span className={`text-base font-normal ml-1 ${highlighted[i] ? 'text-blue-100' : 'text-slate-400 dark:text-gray-500'}`}>USD</span>
               </div>
-              <p className={`text-sm mb-6 mt-2 leading-relaxed ${plan.highlighted ? 'text-blue-100' : 'text-slate-500 dark:text-gray-400'}`}>
+              <p className={`text-sm mb-6 mt-2 leading-relaxed ${highlighted[i] ? 'text-blue-100' : 'text-slate-500 dark:text-gray-400'}`}>
                 {plan.desc}
               </p>
-
               <ul className="space-y-3 mb-8">
                 {plan.features.map(f => (
-                  <li key={f} className={`flex items-center gap-2.5 text-sm ${plan.highlighted ? 'text-white' : 'text-slate-600 dark:text-gray-300'}`}>
-                    <svg className={`w-4 h-4 flex-shrink-0 ${plan.highlighted ? 'text-blue-200' : 'text-[#2563EB]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <li key={f} className={`flex items-center gap-2.5 text-sm ${highlighted[i] ? 'text-white' : 'text-slate-600 dark:text-gray-300'}`}>
+                    <svg className={`w-4 h-4 flex-shrink-0 ${highlighted[i] ? 'text-blue-200' : 'text-[#2563EB]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                     {f}
                   </li>
                 ))}
               </ul>
-
-              <a
-                href="#contacto"
-                className={`block text-center font-bold py-3 rounded-xl transition-all duration-200 ${
-                  plan.highlighted
-                    ? 'bg-white text-[#2563EB] hover:bg-blue-50'
-                    : 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white glow-blue-hover'
-                }`}
-              >
-                {plan.highlighted ? plan.cta : plan.cta + ' →'}
+              <a href="#contacto" className={`block text-center font-bold py-3 rounded-xl transition-all duration-200 ${highlighted[i] ? 'bg-white text-[#2563EB] hover:bg-blue-50' : 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white glow-blue-hover'}`}>
+                {plan.cta}
               </a>
             </div>
           ))}
         </div>
 
         <p className={`text-center text-sm text-slate-400 dark:text-gray-600 mt-10 ${visible ? 'animate-fade-up delay-500' : 'opacity-0'}`}>
-          ¿Necesitas algo diferente? <a href="#contacto" className="text-[#2563EB] hover:underline">Hablemos y armamos un plan a medida.</a>
+          {p.custom} <a href="#contacto" className="text-[#2563EB] hover:underline">{p.customLink}</a>
         </p>
       </div>
     </section>
   )
 }
 
-function Testimonials() {
+function Testimonials({ t }) {
   const [ref, visible] = useInView(0.1)
-
-  const testimonials = [
-    {
-      name: 'María González',
-      role: 'Dueña, Estética Alma',
-      text: 'Me hicieron la landing page en una semana y superó todas mis expectativas. Desde que la lanzamos, las consultas por WhatsApp se duplicaron. Muy profesionales.',
-      initials: 'MG',
-      color: 'from-pink-500 to-rose-500',
-    },
-    {
-      name: 'Carlos Ramírez',
-      role: 'Fundador, FixIt Pro',
-      text: 'El branding que crearon para mi empresa de reparaciones fue exactamente lo que necesitaba. Logo, colores, todo consistente. Ahora parece una empresa grande.',
-      initials: 'CR',
-      color: 'from-blue-500 to-indigo-600',
-    },
-    {
-      name: 'Andrea Molina',
-      role: 'Gerente, Tienda Verde',
-      text: 'Nuestra tienda online quedó hermosa y funciona perfectísimo. El proceso fue súper ordenado, siempre supimos en qué etapa estábamos. Los recomiendo sin dudar.',
-      initials: 'AM',
-      color: 'from-emerald-500 to-teal-600',
-    },
-  ]
+  const s = t.testimonials
+  const colors = ['from-pink-500 to-rose-500', 'from-blue-500 to-indigo-600', 'from-emerald-500 to-teal-600']
+  const initials = ['MG', 'CR', 'AM']
 
   return (
     <section ref={ref} className="py-28 bg-slate-50 dark:bg-black">
       <div className="max-w-6xl mx-auto px-6">
         <div className={`text-center mb-16 ${visible ? 'animate-fade-up' : 'opacity-0'}`}>
-          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">Lo que dicen</span>
-          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">Testimonios</h2>
-          <p className="text-slate-500 dark:text-gray-400 max-w-xl mx-auto">
-            La mejor validación es la de quienes ya trabajaron con nosotros.
-          </p>
+          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">{s.label}</span>
+          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">{s.title}</h2>
+          <p className="text-slate-500 dark:text-gray-400 max-w-xl mx-auto">{s.subtitle}</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {testimonials.map((t, i) => (
+          {s.items.map((item, i) => (
             <div
-              key={t.name}
+              key={item.name}
               className={`bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-8 card-hover ${visible ? 'animate-fade-up' : 'opacity-0'}`}
               style={{ animationDelay: `${0.1 + i * 0.15}s` }}
             >
@@ -690,16 +591,14 @@ function Testimonials() {
                   </svg>
                 ))}
               </div>
-              <p className="text-slate-600 dark:text-gray-300 text-sm leading-relaxed mb-6 italic">
-                "{t.text}"
-              </p>
+              <p className="text-slate-600 dark:text-gray-300 text-sm leading-relaxed mb-6 italic">"{item.text}"</p>
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}>
-                  {t.initials}
+                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${colors[i]} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}>
+                  {initials[i]}
                 </div>
                 <div>
-                  <div className="font-semibold text-sm text-slate-900 dark:text-white">{t.name}</div>
-                  <div className="text-xs text-slate-400 dark:text-gray-500">{t.role}</div>
+                  <div className="font-semibold text-sm text-slate-900 dark:text-white">{item.name}</div>
+                  <div className="text-xs text-slate-400 dark:text-gray-500">{item.role}</div>
                 </div>
               </div>
             </div>
@@ -710,44 +609,22 @@ function Testimonials() {
   )
 }
 
-function FAQ() {
+function FAQ({ t }) {
   const [ref, visible] = useInView(0.1)
   const [open, setOpen] = useState(null)
-
-  const faqs = [
-    {
-      q: '¿Cuánto tiempo tarda un proyecto?',
-      a: 'Depende del tipo de proyecto. Una landing page la entregamos en 7 días, un sitio web completo en 14 días, y el paquete de branding + web en 21 días. Siempre pautamos fechas claras desde el inicio.',
-    },
-    {
-      q: '¿Necesito tener el diseño listo para comenzar?',
-      a: 'No. Nosotros nos encargamos de todo el diseño. Solo necesitamos que nos cuentes tu negocio, tus colores preferidos (si tenés), y qué quieres transmitir. El resto lo manejamos nosotros.',
-    },
-    {
-      q: '¿Qué pasa después de que me entregan el sitio?',
-      a: 'Te entregamos todos los accesos, el código fuente y un video explicando cómo administrar tu sitio. Además, ofrecemos soporte por 30 días post-lanzamiento sin costo adicional.',
-    },
-    {
-      q: '¿Trabajan con clientes fuera de su país?',
-      a: 'Sí, trabajamos con clientes de toda Latinoamérica y Estados Unidos. Nos comunicamos por WhatsApp, Zoom o email según tu preferencia. Los pagos se hacen en dólares.',
-    },
-    {
-      q: '¿Puedo pedir cambios después de que el sitio esté listo?',
-      a: 'Sí. Cada plan incluye rondas de revisiones antes del lanzamiento. Después del lanzamiento, los cambios menores (textos, fotos) tienen costo mínimo. Los cambios grandes se cotizan aparte.',
-    },
-  ]
+  const f = t.faq
 
   return (
     <section ref={ref} className="py-28 bg-white dark:bg-[#0a0a0a]">
       <div className="max-w-3xl mx-auto px-6">
         <div className={`text-center mb-16 ${visible ? 'animate-fade-up' : 'opacity-0'}`}>
-          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">Dudas frecuentes</span>
-          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">FAQ</h2>
-          <p className="text-slate-500 dark:text-gray-400">Las preguntas que más nos hacen, respondidas.</p>
+          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">{f.label}</span>
+          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">{f.title}</h2>
+          <p className="text-slate-500 dark:text-gray-400">{f.subtitle}</p>
         </div>
 
         <div className={`space-y-3 ${visible ? 'animate-fade-up delay-200' : 'opacity-0'}`}>
-          {faqs.map((faq, i) => (
+          {f.items.map((faq, i) => (
             <div
               key={i}
               className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden"
@@ -780,28 +657,24 @@ function FAQ() {
   )
 }
 
-function About({ dark }) {
+function About({ dark, t }) {
   const [ref, visible] = useInView(0.1)
+  const a = t.about
 
   return (
     <section id="nosotros" ref={ref} className="py-28 bg-slate-50 dark:bg-black">
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div className={`${visible ? 'animate-slide-left' : 'opacity-0'}`}>
-            <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">Quiénes somos</span>
+            <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">{a.label}</span>
             <h2 className="text-4xl md:text-5xl font-black mt-3 mb-6 leading-tight text-slate-900 dark:text-white">
-              Dos developers,<br />
-              <span className="gradient-text">una visión.</span>
+              {a.title1}<br />
+              <span className="gradient-text">{a.titleHighlight}</span>
             </h2>
-            <p className="text-slate-500 dark:text-gray-400 leading-relaxed mb-6">
-              Somos un equipo de dos desarrolladores con pasión por crear experiencias digitales que funcionen de verdad.
-              Nos importa el detalle, la velocidad y que tu sitio represente exactamente lo que eres.
-            </p>
-            <p className="text-slate-500 dark:text-gray-400 leading-relaxed mb-8">
-              No somos una agencia enorme con procesos eternos. Somos ágiles, directos y nos comprometemos con cada proyecto como si fuera nuestro propio negocio.
-            </p>
+            <p className="text-slate-500 dark:text-gray-400 leading-relaxed mb-6">{a.p1}</p>
+            <p className="text-slate-500 dark:text-gray-400 leading-relaxed mb-8">{a.p2}</p>
             <div className="grid grid-cols-3 gap-4">
-              {[['10+', 'Proyectos'], ['100%', 'Compromiso'], ['2', 'Devs dedicados']].map(([num, label]) => (
+              {a.stats.map(([num, label]) => (
                 <div key={label} className="text-center bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4">
                   <div className="text-2xl font-black text-[#2563EB]">{num}</div>
                   <div className="text-xs text-slate-500 dark:text-gray-400 mt-1">{label}</div>
@@ -815,9 +688,7 @@ function About({ dark }) {
               <div className="hidden sm:block absolute -inset-4 rounded-3xl bg-[#2563EB]/20 blur-2xl" />
               <div className="relative bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl p-10 text-center">
                 <img src={dark ? '/logo-light.png' : '/logo-dark.png'} alt="Palacios Solutions" className="h-32 object-contain mx-auto mb-6" />
-                <div className="text-slate-500 dark:text-gray-400 text-sm leading-relaxed max-w-xs">
-                  Creemos que toda empresa, sin importar su tamaño, merece una presencia digital de calidad.
-                </div>
+                <div className="text-slate-500 dark:text-gray-400 text-sm leading-relaxed max-w-xs">{a.quote}</div>
               </div>
             </div>
           </div>
@@ -827,10 +698,11 @@ function About({ dark }) {
   )
 }
 
-function Contact() {
+function Contact({ t }) {
   const [ref, visible] = useInView(0.1)
   const [form, setForm] = useState({ name: '', email: '', message: '' })
   const [sent, setSent] = useState(false)
+  const c = t.contact
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -849,53 +721,28 @@ function Contact() {
 
       <div className="relative max-w-3xl mx-auto px-6">
         <div className={`text-center mb-14 ${visible ? 'animate-fade-up' : 'opacity-0'}`}>
-          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">Contacto</span>
-          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">
-            ¿Tienes un proyecto?
-          </h2>
-          <p className="text-slate-500 dark:text-gray-400 max-w-lg mx-auto">
-            Cuéntanos qué necesitas y te respondemos a la brevedad. Sin compromisos.
-          </p>
+          <span className="text-[#2563EB] text-sm font-semibold uppercase tracking-widest">{c.label}</span>
+          <h2 className="text-4xl md:text-5xl font-black mt-3 mb-4 text-slate-900 dark:text-white">{c.title}</h2>
+          <p className="text-slate-500 dark:text-gray-400 max-w-lg mx-auto">{c.subtitle}</p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className={`bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl p-8 md:p-12 space-y-6 ${visible ? 'animate-fade-up delay-200' : 'opacity-0'}`}
-        >
+        <form onSubmit={handleSubmit} className={`bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl p-8 md:p-12 space-y-6 ${visible ? 'animate-fade-up delay-200' : 'opacity-0'}`}>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2 font-medium">Nombre</label>
-              <input
-                type="text" required value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
-                placeholder="Tu nombre"
-                className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#2563EB]/50 transition-all duration-200"
-              />
+              <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2 font-medium">{c.name}</label>
+              <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder={c.namePlaceholder} className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#2563EB]/50 transition-all duration-200" />
             </div>
             <div>
-              <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2 font-medium">Email</label>
-              <input
-                type="email" required value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
-                placeholder="tu@email.com"
-                className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#2563EB]/50 transition-all duration-200"
-              />
+              <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2 font-medium">{c.email}</label>
+              <input type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder={c.emailPlaceholder} className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#2563EB]/50 transition-all duration-200" />
             </div>
           </div>
-
           <div>
-            <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2 font-medium">Cuéntanos tu proyecto</label>
-            <textarea
-              required value={form.message}
-              onChange={e => setForm({ ...form, message: e.target.value })}
-              placeholder="¿Qué tipo de sitio necesitas? ¿Cuándo lo necesitas? ¿Tienes diseño o partimos de cero?"
-              rows={5}
-              className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#2563EB]/50 transition-all duration-200 resize-none"
-            />
+            <label className="block text-sm text-slate-500 dark:text-gray-400 mb-2 font-medium">{c.message}</label>
+            <textarea required value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} placeholder={c.messagePlaceholder} rows={5} className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#2563EB]/50 transition-all duration-200 resize-none" />
           </div>
-
           <button type="submit" className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold py-4 rounded-xl text-base transition-all duration-200 glow-blue glow-blue-hover">
-            {sent ? '¡Mensaje enviado! Revisa tu email.' : 'Enviar mensaje →'}
+            {sent ? c.sent : c.send}
           </button>
         </form>
       </div>
@@ -903,7 +750,8 @@ function Contact() {
   )
 }
 
-function Footer() {
+function Footer({ t }) {
+  const nav = t.nav
   return (
     <footer className="bg-slate-50 dark:bg-black border-t border-slate-200 dark:border-white/10 py-10">
       <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -912,10 +760,10 @@ function Footer() {
           <span className="text-slate-500 dark:text-gray-400 text-sm">Palacios Solutions</span>
         </div>
         <p className="text-slate-400 dark:text-gray-600 text-sm text-center">
-          © {new Date().getFullYear()} Palacios Solutions. Todos los derechos reservados.
+          © {new Date().getFullYear()} Palacios Solutions. {t.footer.rights}
         </p>
         <div className="flex gap-6 text-sm text-slate-400 dark:text-gray-500">
-          {[['#servicios', 'Servicios'], ['#portafolio', 'Portafolio'], ['#precios', 'Precios'], ['#contacto', 'Contacto']].map(([href, label]) => (
+          {[['#servicios', nav.services], ['#portafolio', nav.portfolio], ['#precios', nav.pricing], ['#contacto', nav.contact]].map(([href, label]) => (
             <a key={href} href={href} className="hover:text-[#2563EB] transition-colors">{label}</a>
           ))}
         </div>
@@ -942,11 +790,19 @@ export default function App() {
   const [dark, setDark] = useState(true)
   const [transitioning, setTransitioning] = useState(false)
   const [targetDark, setTargetDark] = useState(true)
+  const [lang, setLang] = useState('es')
 
   useEffect(() => {
-    const saved = localStorage.getItem('theme')
-    if (saved) setDark(saved === 'dark')
+    const savedTheme = localStorage.getItem('theme')
+    if (savedTheme) setDark(savedTheme === 'dark')
+    const savedLang = localStorage.getItem('lang')
+    if (savedLang) setLang(savedLang)
+    else setLang(getBrowserLang())
   }, [])
+
+  useEffect(() => {
+    localStorage.setItem('lang', lang)
+  }, [lang])
 
   const toggleTheme = () => {
     if (transitioning) return
@@ -958,6 +814,8 @@ export default function App() {
     setDark(d => !d)
     localStorage.setItem('theme', targetDark ? 'dark' : 'light')
   }
+
+  const t = translations[lang]
 
   return (
     <div className={dark ? 'dark' : ''}>
@@ -971,17 +829,17 @@ export default function App() {
         <div className={`transition-opacity duration-500 ${dark ? 'opacity-100' : 'opacity-10'}`}>
           <StarField dark={dark} />
         </div>
-        <Navbar dark={dark} toggleTheme={toggleTheme} />
-        <Hero />
-        <Services />
-        <Portfolio />
-        <Process />
-        <Pricing />
-        <Testimonials />
-        <FAQ />
-        <About dark={dark} />
-        <Contact />
-        <Footer />
+        <Navbar dark={dark} toggleTheme={toggleTheme} lang={lang} setLang={setLang} t={t} />
+        <Hero t={t} />
+        <Services t={t} />
+        <Portfolio t={t} />
+        <Process t={t} />
+        <Pricing t={t} />
+        <Testimonials t={t} />
+        <FAQ t={t} />
+        <About dark={dark} t={t} />
+        <Contact t={t} />
+        <Footer t={t} />
         <WhatsAppButton />
       </div>
     </div>
